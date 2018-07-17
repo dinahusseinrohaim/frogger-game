@@ -9,7 +9,7 @@
  * drawn but that is not the case. What's really happening is the entire "scene"
  * is being drawn over and over, presenting the illusion of animation.
  *
- * This engine makes the canvas' context (ctx) object globally available to make 
+ * This engine makes the canvas' context (ctx) object globally available to make
  * writing app.js a little simpler to work with.
  */
 
@@ -79,8 +79,18 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
     }
+
+    function checkCollisions() {
+      allEnemies.forEach(enemy =>{
+        if(enemy.checkCollisions(player) || player.checkCollisions(enemy)) {
+          player.reset();
+          player.score -=1;
+        }
+      })
+    }
+
 
     /* This is called by the update function and loops through all of the
      * objects within your allEnemies array as defined in app.js and calls
@@ -89,12 +99,13 @@ var Engine = (function(global) {
      * the data/properties related to the object. Do your drawing in your
      * render methods.
      */
-    function updateEntities(dt) {
+     function updateEntities(dt) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
-    }
+         player.update();
+      }
+
 
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
@@ -103,42 +114,54 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
-        /* This array holds the relative URL to the image used
-         * for that particular row of the game level.
-         */
-        var rowImages = [
-                'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
-            ],
-            numRows = 6,
-            numCols = 5,
-            row, col;
-        
-        // Before drawing, clear existing canvas
-        ctx.clearRect(0,0,canvas.width,canvas.height)
+          /* This array holds the relative URL to the image used
+           * for that particular row of the game level.
+           */
+          var rowImages = [
+                  'images/water-block.png',   // Top row is water
+                  'images/stone-block.png',   // Row 1 of 3 of stone
+                  'images/stone-block.png',   // Row 2 of 3 of stone
+                  'images/stone-block.png',   // Row 3 of 3 of stone
+                  'images/grass-block.png',   // Row 1 of 2 of grass
+                  'images/grass-block.png'    // Row 2 of 2 of grass
+              ],
+              numRows = 6,
+              numCols = 5,
+              row, col;
 
-        /* Loop through the number of rows and columns we've defined above
-         * and, using the rowImages array, draw the correct image for that
-         * portion of the "grid"
-         */
-        for (row = 0; row < numRows; row++) {
-            for (col = 0; col < numCols; col++) {
-                /* The drawImage function of the canvas' context element
-                 * requires 3 parameters: the image to draw, the x coordinate
-                 * to start drawing and the y coordinate to start drawing.
-                 * We're using our Resources helpers to refer to our images
-                 * so that we get the benefits of caching these images, since
-                 * we're using them over and over.
-                 */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
-            }
-        }
+          // Before drawing, clear existing canvas
+          ctx.clearRect(0,0,canvas.width,canvas.height)
 
+          /* Loop through the number of rows and columns we've defined above
+           * and, using the rowImages array, draw the correct image for that
+           * portion of the "grid"
+           */
+          for (row = 0; row < numRows; row++) {
+              for (col = 0; col < numCols; col++) {
+                  /* The drawImage function of the canvas' context element
+                   * requires 3 parameters: the image to draw, the x coordinate
+                   * to start drawing and the y coordinate to start drawing.
+                   * We're using our Resources helpers to refer to our images
+                   * so that we get the benefits of caching these images, since
+                   * we're using them over and over.
+                   */
+                   ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+              }
+          }
+        // trying to start on key event
+        //   document.addEventListener('keyup', function(e){
+        //   var keyToStart = allowedKeys;
+        //   if (keyToStart) {
+        //     e.preventDefault();
+        //   }
+        // })
         renderEntities();
+        function renderScore() {
+          ctx.font = "20px Georgia"
+          ctx.fillText(`Score: ${player.score}`, 0, 30 )
+        }
+        renderScore();
+
     }
 
     /* This function is called by the render function and is called on each game
@@ -161,7 +184,7 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        player.reset();
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -169,11 +192,12 @@ var Engine = (function(global) {
      * all of these images are properly loaded our game will start.
      */
     Resources.load([
+        'images/char-boy.png',
         'images/stone-block.png',
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-pink-girl.png'
     ]);
     Resources.onReady(init);
 
